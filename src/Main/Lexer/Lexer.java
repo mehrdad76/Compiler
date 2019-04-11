@@ -345,10 +345,8 @@ public class Lexer {
         if (state == State.Start)
             return null;
 
-        preState = state;
-        state = findNextState(state, Character.toString('\n'));
-        if (state == null)
-            state = preState;
+        if (state == State.Slash_Slash)
+            state = State.Slash_Slash_Enter;
         if(State.getTokenName(state) != null){
             res.key = State.getTokenName(state);
             res.value = sb.toString();
