@@ -316,6 +316,7 @@ public class Lexer {
         Tuple<String, String> res = new Tuple<>();
         StringBuilder sb = new StringBuilder();
         State preState;
+        int startLine = line;
         currentChar = nextChar;
         while (currentChar != -1) {
             char ch = (char) currentChar;
@@ -330,11 +331,11 @@ public class Lexer {
             } else if(isValidInput(ch) && State.getTokenName(preState) != null){
                 res.key = State.getTokenName(preState);
                 res.value = sb.toString();
-                return new Tuple<>(line, new Tuple<>(res, null));
+                return new Tuple<>(startLine, new Tuple<>(res, null));
             } else {
                 sb.append(ch);
                 nextChar = r.read();
-                return new Tuple<>(line, new Tuple<>(null, sb.toString()));
+                return new Tuple<>(startLine, new Tuple<>(null, sb.toString()));
             }
             nextChar = r.read();
             currentChar = nextChar;
@@ -346,14 +347,14 @@ public class Lexer {
         if(State.getTokenName(state) != null){
             res.key = State.getTokenName(state);
             res.value = sb.toString();
-            return new Tuple<>(line, new Tuple<>(res, null));
+            return new Tuple<>(startLine, new Tuple<>(res, null));
         } else {
-            return new Tuple<>(line, new Tuple<>(null, sb.toString()));
+            return new Tuple<>(startLine, new Tuple<>(null, sb.toString()));
         }
 
     }
 
-    public ArrayList<Tuple<Integer, Tuple<String, String>>> analyse(String fileName) throws IOException {
+    public Tuple<ArrayList<Tuple<Integer, Tuple<String, String>>>, ArrayList<Tuple<Integer, String>>> analyse(String fileName) throws IOException {
         ArrayList<Tuple<Integer, Tuple<String, String>>> res = new ArrayList<>();
         ArrayList<Tuple<Integer, String>> errors = new ArrayList<>();
 
@@ -374,7 +375,7 @@ public class Lexer {
                 break;
         } while (true);
 
-        return res;
+        return new Tuple<>(res, errors);
     }
 
 }
