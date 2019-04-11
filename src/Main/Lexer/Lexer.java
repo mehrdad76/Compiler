@@ -265,7 +265,8 @@ public class Lexer {
 
 
         table.put(State.Slash, new PriorityRegexDictionary<>());
-        table.get(State.Slash).put("\\*|/", State.Slash_Star);
+        table.get(State.Slash).put("\\*", State.Slash_Star);
+        table.get(State.Slash).put("/", State.Slash_Slash);
 
 
         table.put(State.Slash_Star, new PriorityRegexDictionary<>());
@@ -326,9 +327,9 @@ public class Lexer {
 
             preState = state;
             state = findNextState(state, Character.toString(ch));
-            if (State.getTokenName(state) != null){
+            if (state != null){
                 sb.append(ch);
-            } else if(isValidInput(ch) && State.getTokenName(preState) != null){
+            } else if(isValidInput(ch)){
                 res.key = State.getTokenName(preState);
                 res.value = sb.toString();
                 return new Tuple<>(startLine, new Tuple<>(res, null));
