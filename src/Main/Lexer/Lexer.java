@@ -6,14 +6,14 @@ import Main.PriorityRegexDictionary.Tuple;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Lexer {
-    InputStream in;
-    Reader r;
+    private Reader r;
 
-    private HashMap<State, PriorityRegexDictionary<State>> table = new HashMap<>();
+    private static Map<State, PriorityRegexDictionary<State>> table = new HashMap<>();
 
-    {
+    static {
         table.put(State.Start, new PriorityRegexDictionary<>());
         table.get(State.Start).put("[0-9]", State.Digit);
         table.get(State.Start).put("\\n|\\t|\\r|\\f|\\v| ", State.White);
@@ -299,37 +299,36 @@ public class Lexer {
 
     }
 
-    public State findNextState(State state, String input){
+    private State findNextState(State state, String input) {
         return table.get(state).get(input);
     }
 
-    public boolean isValidInput(char c){
+    private boolean isValidInput(char c) {
         State s = State.Start;
         return table.get(s).get(Character.toString(c)) != null;
     }
 
-    private int currentChar;
     private int nextChar;
     private int line = 1;
 
-    public Tuple<Integer, Tuple<Tuple<String, String>, String>> getNextToken() throws IOException { //line, lexer gp, word, error
+    private Tuple<Integer, Tuple<Tuple<String, String>, String>> getNextToken() throws IOException { //line, lexer gp, word, error
         State state = State.Start;
         Tuple<String, String> res = new Tuple<>();
         StringBuilder sb = new StringBuilder();
         State preState;
         int startLine = line;
-        currentChar = nextChar;
+        int currentChar = nextChar;
         while (currentChar != -1) {
             char ch = (char) currentChar;
 
             if (ch == '\n')
-                line ++;
+                line++;
 
             preState = state;
             state = findNextState(state, Character.toString(ch));
-            if (state != null){
+            if (state != null) {
                 sb.append(ch);
-            } else if(isValidInput(ch)){
+            } else if (isValidInput(ch)) {
                 res.key = State.getTokenName(preState);
                 res.value = sb.toString();
                 return new Tuple<>(startLine, new Tuple<>(res, null));
@@ -347,7 +346,7 @@ public class Lexer {
 
         if (state == State.Slash_Slash)
             state = State.Slash_Slash_Enter;
-        if(State.getTokenName(state) != null){
+        if (State.getTokenName(state) != null) {
             res.key = State.getTokenName(state);
             res.value = sb.toString();
             return new Tuple<>(startLine, new Tuple<>(res, null));
@@ -361,20 +360,19 @@ public class Lexer {
         ArrayList<Tuple<Integer, Tuple<String, String>>> res = new ArrayList<>();
         ArrayList<Tuple<Integer, String>> errors = new ArrayList<>();
 
-        in = new FileInputStream(fileName);
+        InputStream in = new FileInputStream(fileName);
         r = new InputStreamReader(in, "UTF-8");
 
         Tuple<Integer, Tuple<Tuple<String, String>, String>> t;
         nextChar = r.read();
         do {
             t = getNextToken();
-            if (t != null){
+            if (t != null) {
                 if (t.value.key == null)
                     errors.add(new Tuple<>(t.key, t.value.value));
                 else
                     res.add(new Tuple<>(t.key, t.value.key));
-            }
-            else
+            } else
                 break;
         } while (true);
 
