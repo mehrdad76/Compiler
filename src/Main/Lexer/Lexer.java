@@ -306,8 +306,8 @@ public class Lexer {
         table.get(State.Slash).put("/", State.Slash_Slash);
 
 
-        table.put(State.Slash_Star, new PriorityRegexDictionary<>());
-        table.get(State.Slash_Star).put(".|\\n|\\t|\\r|\\f|\\v", State.Slash_Star);
+//        table.put(State.Slash_Star, new PriorityRegexDictionary<>());
+//        table.get(State.Slash_Star).put(".|\\n|\\t|\\r|\\f|\\v", State.Slash_Star);
 
 
         table.put(State.Slash_Star, new PriorityRegexDictionary<>());
@@ -315,9 +315,9 @@ public class Lexer {
         table.get(State.Slash_Star).put(".|\\n|\\t|\\r|\\f|\\v", State.Slash_Star);
 
 
-        table.put(State.Slash_Star, new PriorityRegexDictionary<>());
-        table.get(State.Slash_Star).put("/", State.Slash_Star_Star_Slash);
-        table.get(State.Slash_Star).put(".|\\n|\\t|\\r|\\f|\\v", State.Slash_Star);
+        table.put(State.Slash_Star_Star, new PriorityRegexDictionary<>());
+        table.get(State.Slash_Star_Star).put("/", State.Slash_Star_Star_Slash);
+        table.get(State.Slash_Star_Star).put(".|\\n|\\t|\\r|\\f|\\v", State.Slash_Star);
 
 
         table.put(State.Slash_Star_Star_Slash, new PriorityRegexDictionary<>());
@@ -353,7 +353,7 @@ public class Lexer {
         Tuple<String, String> res = new Tuple<>();
         StringBuilder sb = new StringBuilder();
         State preState;
-        int startLine = line;
+//        int startLine = line;
         int currentChar = nextChar;
         while (currentChar != -1) {
             char ch = (char) currentChar;
@@ -364,11 +364,11 @@ public class Lexer {
             } else if (isValidInput(ch)) {
                 res.key = State.getTokenName(preState);
                 res.value = sb.toString();
-                return new Tuple<>(startLine, new Tuple<>(res, null));
+                return new Tuple<>(line, new Tuple<>(res, null));
             } else {
                 sb.append(ch);
                 nextChar = r.read();
-                return new Tuple<>(startLine, new Tuple<>(null, sb.toString()));
+                return new Tuple<>(line, new Tuple<>(null, sb.toString()));
             }
 
             if (ch == '\n')
@@ -386,9 +386,9 @@ public class Lexer {
         if (State.getTokenName(state) != null) {
             res.key = State.getTokenName(state);
             res.value = sb.toString();
-            return new Tuple<>(startLine, new Tuple<>(res, null));
+            return new Tuple<>(line, new Tuple<>(res, null));
         } else {
-            return new Tuple<>(startLine, new Tuple<>(null, sb.toString()));
+            return new Tuple<>(line, new Tuple<>(null, sb.toString()));
         }
 
     }
