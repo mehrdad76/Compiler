@@ -144,12 +144,12 @@ public enum State {
         HashSet<State> eof = new HashSet<>();
         eof.add(Eof);
 
-        HashSet<State> bug = new HashSet<>();
-        bug.add(Start);
-        bug.add(Slash);
-        bug.add(Slash_Star);
-        bug.add(Slash_Star_Star);
-        bug.add(Slash_Slash);
+//        HashSet<State> bug = new HashSet<>();
+//        bug.add(Start);
+//        bug.add(Slash);
+//        bug.add(Slash_Star);
+//        bug.add(Slash_Star_Star);
+//        bug.add(Slash_Slash);
 
         if (num.contains(s))
             return "NUM";
