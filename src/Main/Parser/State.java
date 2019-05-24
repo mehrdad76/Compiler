@@ -33,6 +33,26 @@ public class State {
 
     @Override
     public String toString() {
+        switch (this.SName) {
+                    case "camma":
+                        return ",";
+                    case "oc":
+                        return "[";
+                    case "cc":
+                        return "]";
+                    case "of":
+                        return "{";
+                    case "cf":
+                        return "}";
+                    case "minus":
+                        return "-";
+                    case "eq":
+                        return "=";
+                    case "~":
+                        return "==";
+                    case "lt":
+                        return "<";
+                }
         return SName;
     }
 

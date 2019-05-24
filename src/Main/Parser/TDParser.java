@@ -33,38 +33,10 @@ public class TDParser {
             isNext = true;
 
             if (aux == null){
-                if (currentState.getNextStates().get(0).key.equals("eof")){
-                    ErrorHandler.addParserError(res.key, " : Syntax Error! Unexpected EndOfFile");
-                    throw new Exception("endOfFile");
-                }
-                if (!Character.isUpperCase(currentState.getNextStates().get(0).key.charAt(0))){
-                    ErrorHandler.addParserError(res.key, " : Syntax Error! Missing " + currentState.getNextStates().get(0).key);
-                    throw new Exception("error happened");
-                } else {
-                    while (true){
-                        String token = res.value.key;
-                        Diagram expectedNonTerminal = getDiagram(currentState.getNextStates().get(0).key);
-                        assert expectedNonTerminal != null;
-                        if (expectedNonTerminal.getFirstSet().contains(token) || expectedNonTerminal.getFollowSet().contains(token)){
-                            if (expectedNonTerminal.getFirstSet().contains(token) || expectedNonTerminal.isNullable){
-                                continue;
-                            }
-                            ErrorHandler.addParserError(res.key, " : Syntax Error! Missing " + getNonTerminalDes(expectedNonTerminal));
-                            currentState = currentState.getNextState(expectedNonTerminal.getName());
-                            continue;
-                        }
-
-                        ErrorHandler.addParserError(res.key, " : Syntax Error! Unexpected " + res.value);
-                        res = lexer.get_next_token(codeAddress);
-                        if (res.value.key.equals("EOF")) {
-                            ErrorHandler.addParserError(res.key, " : Syntax Error! Malformed Input");
-                            throw new Exception("endOfFile");
-                        }
-                    }
-                }
+                handleError(currentState, codeAddress, lexer);
             }
 
-
+            assert aux != null;
             String tr = aux.key;
             String seen = aux.value;
 
@@ -73,7 +45,14 @@ public class TDParser {
                 printLayer(layer+1, "epsilon");
             } else if(!Character.isUpperCase(tr.charAt(0))){
                 currentState = currentState.getNextState(tr);
-                printLayer(layer+1, seen);
+                if (tr.equals("id")){
+                    printLayer(layer+1, "Id");
+                    printLayer(layer+2, seen);
+                } else {
+                    printLayer(layer+1, seen);
+                }
+                if (res.value.key.equals("EOF"))
+                    break;
                 res = lexer.get_next_token(codeAddress);
                 isNext = false;
             } else {
@@ -85,8 +64,41 @@ public class TDParser {
             }
 
 
-        } while (!res.value.key.equals("EOF"));
+        } while (true);
 
+    }
+
+    private void handleError(State currentState, String codeAddress, Lexer lexer) throws Exception{
+        if (currentState.getNextStates().get(0).key.equals("eof")){
+            ErrorHandler.addParserError(res.key, " : Syntax Error! Unexpected EndOfFile");
+            throw new Exception("endOfFile");
+        }
+        if (!Character.isUpperCase(currentState.getNextStates().get(0).key.charAt(0))){
+            ErrorHandler.addParserError(res.key, " : Syntax Error! Missing " + currentState.getNextStates().get(0).key);
+            throw new Exception("error happened");
+        } else {
+            while (true){
+                String token = res.value.key;
+                Diagram expectedNonTerminal = getDiagram(currentState.getNextStates().get(0).key);
+                assert expectedNonTerminal != null;
+                if (expectedNonTerminal.getFirstSet().contains(token) || expectedNonTerminal.getFollowSet().contains(token)){
+                    if (expectedNonTerminal.getFirstSet().contains(token) || expectedNonTerminal.isNullable){
+                        continue;
+                    }
+                    ErrorHandler.addParserError(res.key, " : Syntax Error! Missing " + getNonTerminalDes(expectedNonTerminal));
+                    currentState = currentState.getNextState(expectedNonTerminal.getName());
+                    continue;
+                }
+
+                if (res.value.key.equals("EOF")) {
+                    ErrorHandler.addParserError(res.key, " : Syntax Error! Malformed Input");
+                    throw new Exception("endOfFile");
+                } else {
+                    ErrorHandler.addParserError(res.key, " : Syntax Error! Unexpected " + res.value);
+                    res = lexer.get_next_token(codeAddress);
+                }
+            }
+        }
     }
 
     private void printLayer(int layer, String s) {
@@ -100,7 +112,86 @@ public class TDParser {
     }
 
     private String getNonTerminalDes(Diagram expectedNonTerminal) {
-        return "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO";
+        switch (expectedNonTerminal.getName()){
+            case "Program":
+                return "Program";
+            case "Declaration_list":
+                return "a program";
+            case "Declaration":
+                return "a new part of program";
+            case "AAA6":
+                return "; or define function";
+            case "AAA1":
+                return "[]";
+            case "Type_specifier":
+                return "int or void";
+            case "Params":
+                return "parameters";
+            case "AAA8":
+                return "parameter details";
+            case "AAA7":
+                return "initial values";
+            case "Param":
+                return "a parameter";
+            case "AAA2":
+                return "[]";
+            case "Compound_stmt":
+                return "function body";
+            case "Statement_list":
+                return "some statements";
+            case "Statement":
+                return "a statement";
+            case "Expression_stmt":
+                return "an expression, break or continue";
+            case "Selection_stmt":
+                return "if statement";
+            case "Iteration_stmt":
+                return "while statement";
+            case "Return_stmt":
+                return "return";
+            case "AAA3":
+                return "an expression";
+            case "Switch_stmt":
+                return "switch";
+            case "Case_stmts":
+                return "some cases";
+            case "Case_stmt":
+                return " a case";
+            case "Default_stmt":
+                return"default statement";
+            case "Expression":
+                return "an expression";
+            case "AAA13":
+                return "[ or (";
+            case "AAA14":
+                return "= or *";
+            case "AAA4":
+                return "[";
+            case "AAA5":
+                return "< or ==";
+            case "Relop":
+                return "< or ==";
+            case "AAA12":
+                return "+ or -";
+            case "Addop":
+                return "+ or -";
+            case "AAA11":
+                return "*";
+            case "Signed_factor":
+                return "a number";
+            case "Factor":
+                return "a number";
+            case "AAA10":
+                return "[ or (";
+            case "Args":
+                return "some arguments";
+            case "Arg_list":
+                return "some arguments";
+            case "AAA9":
+                return ",";
+        }
+
+        return expectedNonTerminal.getName();
     }
 
     public Tuple<String, String> getNextTransaction(Diagram cDdiagram, State state, Tuple<String, String> nextToken) throws Exception {
