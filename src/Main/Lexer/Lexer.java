@@ -1,5 +1,6 @@
 package Main.Lexer;
 
+import Main.OutputHandler.ErrorHandler;
 import Main.PriorityRegexDictionary.PriorityRegexDictionary;
 import Main.PriorityRegexDictionary.Tuple;
 
@@ -18,7 +19,7 @@ public class Lexer {
         table.get(State.Start).put("[0-9]", State.Digit);
         table.get(State.Start).put("\\n|\\t|\\r|\\f|\\v| ", State.White);
         table.get(State.Start).put("/", State.Slash);
-        table.get(State.Start).put(";|:|,|\\[|\\]|\\(|\\)|\\{|\\}|\\+|-|\\*|=|<", State.Symbol);
+        table.get(State.Start).put(";|:|,|\\[|\\]|\\(|\\)|\\{|\\}|\\+|-|\\*|=|<|>", State.Symbol);
         table.get(State.Start).put("eof", State.Eof);
         table.get(State.Start).put("i", State.I);
         table.get(State.Start).put("e", State.E);
@@ -74,7 +75,7 @@ public class Lexer {
 
 
         table.put(State.D, new PriorityRegexDictionary<>());
-        table.get(State.D).put("i", State.De);
+        table.get(State.D).put("e", State.De);
         table.get(State.D).put("[A-Za-z0-9]", State.Id);
 
 
@@ -391,6 +392,36 @@ public class Lexer {
             return new Tuple<>(line, new Tuple<>(null, sb.toString()));
         }
 
+    }
+
+    private String fileName;
+
+    public Tuple<Integer, Tuple<String, String>> get_next_token(String fileName) throws Exception{
+        assert fileName != null;
+        if (this.fileName == null) {
+            this.fileName = fileName;
+            InputStream in = new FileInputStream(fileName);
+            r = new InputStreamReader(in, "UTF-8");
+            nextChar = r.read();
+        } else if (!fileName.equals(this.fileName)){
+            throw new Exception("Lexer is doing on another file!");
+        }
+
+        Tuple<Integer, Tuple<Tuple<String, String>, String>> t;
+        do {
+            t = getNextToken();
+            if (t != null) {
+                if (t.value.key != null) {
+                    if (!(t.value.key.key.equals("COMMENT") || t.value.key.key.equals("WHITESPACE")))
+                        return new Tuple<>(t.key, t.value.key);
+                } else {
+                    ErrorHandler.addLexerError(new Tuple<>(t.key, t.value.value));
+                }
+            } else
+                break;
+        } while (true);
+
+        return new Tuple<>(line, new Tuple<>("EOF", "EOF"));
     }
 
     public Tuple<ArrayList<Tuple<Integer, Tuple<String, String>>>, ArrayList<Tuple<Integer, String>>> analyse(String fileName) throws IOException {

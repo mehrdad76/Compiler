@@ -1,41 +1,51 @@
 package Main;
 
+import Main.OutputHandler.ErrorHandler;
 import Main.Lexer.Lexer;
+import Main.OutputHandler.ParseHandler;
+import Main.Parser.TDParser;
 import Main.PriorityRegexDictionary.Tuple;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-        Lexer lexer = new Lexer();
-
-        Tuple<ArrayList<Tuple<Integer, Tuple<String, String>>>, ArrayList<Tuple<Integer, String>>> a = lexer.analyse("sample.c");// be tartib avvali token va dovomi error. too har kodoom avvali shomare khat va dovomi error ya tokene. :)
-
-        List<Tuple<Integer, Tuple<String, String>>> analyzed = a.key;
-        List<Tuple<Integer, String>> errors = a.value;
-
-        writeToFile(analyzedToString(analyzed), "scanner.txt");
-        writeToFile(errorsToString(errors), "errors.txt");
-//        printErrors(errors);
-
-//        for (int i = 0; i < a.key.size(); i++) {
-//            System.out.println(a.key.get(i).key + "   " + a.key.get(i).value);
-//        }
+    public static void main(String[] args) throws Exception {
+        /////////////////////// phase 1
+//        Lexer lexer = new Lexer();
 //
-//        System.out.println();
+//        Tuple<ArrayList<Tuple<Integer, Tuple<String, String>>>, ArrayList<Tuple<Integer, String>>> a = lexer.analyse("sample.c");// be tartib avvali token va dovomi error. too har kodoom avvali shomare khat va dovomi error ya tokene. :)
 //
-//        for (int i = 0; i < a.value.size(); i++) {
-//            System.out.println(a.value.get(i));
-//        }
+//        List<Tuple<Integer, Tuple<String, String>>> analyzed = a.key;
+//        List<Tuple<Integer, String>> errors = a.value;
+//
+//        writeToFile(analyzedToString(analyzed), "scanner.txt");
+//        writeToFile(errorsToString(errors), "errors.txt");
+
+
+        /////////////////// phase 2
+
+        TDParser tdParser = new TDParser();
+        tdParser.createDiagrams("grammar.txt");
+        tdParser.createFF("ff.txt");
+        try {
+            tdParser.parse(new Lexer(), "sample.c", tdParser.diagrams.get(0), tdParser.diagrams.get(0).getStartState(), true, 0);
+        } catch (Exception e){
+            System.out.println("error!");
+        } finally {
+            System.out.println("done!");
+            ErrorHandler.writeInFile();
+            ParseHandler.print();
+        }
+
+        /////////////////////     test
+
 
     }
 
-    private static void writeToFile(String string, String fileName) {
+    public static void writeToFile(String string, String fileName) {
         try (PrintWriter out = new PrintWriter(fileName)) {
             out.print(string);
         } catch (FileNotFoundException e) {
@@ -75,7 +85,7 @@ public class Main {
         return res.toString();
     }
 
-    private static String errorsToString(List<Tuple<Integer, String>> errors) {
+    public static String errorsToString(List<Tuple<Integer, String>> errors) {
         int maxLine = -1;
         for (Tuple<Integer, String> item : errors) {
             if (item.key > maxLine)
